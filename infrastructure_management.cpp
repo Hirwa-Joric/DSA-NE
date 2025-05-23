@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <limits>
+#include <sstream>  // For string stream operations
 
 using namespace std;
 
@@ -26,6 +27,7 @@ private:
     vector<City> cities;
     vector<vector<int>> roadsMatrix;
     vector<vector<double>> budgetMatrix;
+    bool dataLoaded;
 
     // Helper functions
     int findCityIndexByName(const string& cityName) {
@@ -63,7 +65,10 @@ private:
     }
 
 public:
-    InfrastructureManagement() {}
+    InfrastructureManagement() : dataLoaded(false) {
+        // Try to load data from files on initialization
+        loadDataFromFiles();
+    }
 
     void addCity(string name) {
         // Check if city already exists
@@ -246,6 +251,101 @@ public:
         file.close();
         cout << "Roads saved to roads.txt" << endl;
     }
+    
+    void loadCitiesFromFile() {
+        ifstream file("cities.txt");
+        
+        if (!file.is_open()) {
+            cout << "No previous cities data found." << endl;
+            return;
+        }
+        
+        string line;
+        // Skip header line
+        getline(file, line);
+        
+        cities.clear(); // Clear existing cities
+        
+        while (getline(file, line)) {
+            stringstream ss(line);
+            int index;
+            string name;
+            
+            ss >> index;
+            // Skip the tab character
+            ss.ignore(1);
+            // Read the rest of the line as the city name
+            getline(ss, name);
+            
+            cities.push_back(City(index, name));
+        }
+        
+        file.close();
+        
+        // Resize matrices to match loaded cities
+        if (!cities.empty()) {
+            resizeMatrices();
+            cout << cities.size() << " cities loaded from cities.txt" << endl;
+        }
+    }
+    
+    void loadRoadsFromFile() {
+        ifstream file("roads.txt");
+        
+        if (!file.is_open()) {
+            cout << "No previous roads data found." << endl;
+            return;
+        }
+        
+        string line;
+        // Skip header line
+        getline(file, line);
+        
+        while (getline(file, line)) {
+            stringstream ss(line);
+            int roadNum;
+            string roadInfo;
+            double budget;
+            string city1, city2;
+            
+            // Read road number (with the dot)
+            ss >> roadNum;
+            ss.ignore(2); // Skip the dot and tab
+            
+            // Read the road info (city1-city2)
+            getline(ss, roadInfo, '\t');
+            
+            // Find the position of the hyphen
+            size_t hyphenPos = roadInfo.find('-');
+            if (hyphenPos != string::npos) {
+                city1 = roadInfo.substr(0, hyphenPos);
+                city2 = roadInfo.substr(hyphenPos + 1);
+                
+                // Skip tabs
+                ss >> budget;
+                
+                // Add the road and budget
+                int idx1 = findCityIndexByName(city1);
+                int idx2 = findCityIndexByName(city2);
+                
+                if (idx1 != -1 && idx2 != -1) {
+                    roadsMatrix[idx1][idx2] = 1;
+                    roadsMatrix[idx2][idx1] = 1;
+                    budgetMatrix[idx1][idx2] = budget;
+                    budgetMatrix[idx2][idx1] = budget;
+                }
+            }
+        }
+        
+        file.close();
+        cout << "Roads and budgets loaded from roads.txt" << endl;
+    }
+    
+    void loadDataFromFiles() {
+        loadCitiesFromFile();
+        loadRoadsFromFile();
+        dataLoaded = true;
+    }
 
     void saveAllData() {
         saveCitiesToFile();
@@ -273,7 +373,16 @@ int main() {
     
     do {
         displayMenu();
-        cin >> choice;
+        
+        // Check if the input is a valid integer
+        if (!(cin >> choice)) {
+            // Clear the error state
+            cin.clear();
+            // Discard invalid input
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a number." << endl;
+            continue;
+        }
         
         // Clear the input buffer
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -282,7 +391,23 @@ int main() {
             case 1: {
                 int numCities;
                 cout << "Enter the number of cities to add: ";
-                cin >> numCities;
+                
+                // Check if the input is a valid integer
+                if (!(cin >> numCities)) {
+                    // Clear the error state
+                    cin.clear();
+                    // Discard invalid input
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid input. Please enter a number." << endl;
+                    break;
+                }
+                
+                // Validate the number of cities
+                if (numCities <= 0) {
+                    cout << "Please enter a positive number of cities." << endl;
+                    break;
+                }
+                
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
                 for (int i = 0; i < numCities; i++) {
@@ -301,8 +426,17 @@ int main() {
                 string city1, city2;
                 cout << "Enter the name of the first city: ";
                 getline(cin, city1);
+                if (city1.empty()) {
+                    cout << "City name cannot be empty. Please try again." << endl;
+                    break;
+                }
+                
                 cout << "Enter the name of the second city: ";
                 getline(cin, city2);
+                if (city2.empty()) {
+                    cout << "City name cannot be empty. Please try again." << endl;
+                    break;
+                }
                 
                 infra.addRoad(city1, city2);
                 
@@ -317,10 +451,34 @@ int main() {
                 
                 cout << "Enter the name of the first city: ";
                 getline(cin, city1);
+                if (city1.empty()) {
+                    cout << "City name cannot be empty. Please try again." << endl;
+                    break;
+                }
+                
                 cout << "Enter the name of the second city: ";
                 getline(cin, city2);
+                if (city2.empty()) {
+                    cout << "City name cannot be empty. Please try again." << endl;
+                    break;
+                }
+                
                 cout << "Enter the budget for that road: ";
-                cin >> budget;
+                if (!(cin >> budget)) {
+                    // Clear the error state
+                    cin.clear();
+                    // Discard invalid input
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid budget value. Please enter a number." << endl;
+                    break;
+                }
+                
+                if (budget <= 0) {
+                    cout << "Budget must be a positive number." << endl;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+                }
+                
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
                 infra.addBudget(city1, city2, budget);
@@ -335,11 +493,29 @@ int main() {
                 string newName;
                 
                 cout << "Enter the index of the city to edit: ";
-                cin >> index;
+                if (!(cin >> index)) {
+                    // Clear the error state
+                    cin.clear();
+                    // Discard invalid input
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid index. Please enter a number." << endl;
+                    break;
+                }
+                
+                if (index <= 0) {
+                    cout << "Index must be a positive number." << endl;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+                }
+                
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
                 cout << "Enter new name for city: ";
                 getline(cin, newName);
+                if (newName.empty()) {
+                    cout << "City name cannot be empty. Please try again." << endl;
+                    break;
+                }
                 
                 infra.editCity(index, newName);
                 
@@ -352,7 +528,21 @@ int main() {
                 int index;
                 
                 cout << "Enter the index of the city to search: ";
-                cin >> index;
+                if (!(cin >> index)) {
+                    // Clear the error state
+                    cin.clear();
+                    // Discard invalid input
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid index. Please enter a number." << endl;
+                    break;
+                }
+                
+                if (index <= 0) {
+                    cout << "Index must be a positive number." << endl;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+                }
+                
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
                 infra.searchCity(index);
