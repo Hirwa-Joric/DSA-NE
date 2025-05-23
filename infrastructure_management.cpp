@@ -6,8 +6,20 @@
 #include <algorithm>
 #include <limits>
 #include <sstream>  // For string stream operations
+#include <cstdlib>   // For system("clear") function
 
 using namespace std;
+
+// Helper function to print a horizontal line divider
+void printDivider(char symbol = '=', int length = 50) {
+    cout << string(length, symbol) << endl;
+}
+
+// Helper function to print a centered title
+void printTitle(const string& title, char symbol = '=', int length = 50) {
+    int padding = (length - title.length()) / 2;
+    cout << string(padding, symbol) << " " << title << " " << string(padding - (title.length() % 2 == 0 ? 0 : 1), symbol) << endl;
+}
 
 class City {
 private:
@@ -162,51 +174,116 @@ public:
     void searchCity(int index) {
         int idx = findCityIndexByIndex(index);
         
+        printDivider('=', 60);
+        printTitle("SEARCH RESULTS", '=', 60);
+        printDivider('-', 60);
+        
         if (idx == -1) {
             cout << "No city found with index " << index << endl;
+            printDivider('-', 60);
             return;
         }
         
-        cout << "City found: " << cities[idx].getIndex() << ": " << cities[idx].getName() << endl;
+        cout << setw(10) << "INDEX" << setw(30) << "CITY NAME" << endl;
+        printDivider('-', 60);
+        cout << setw(10) << cities[idx].getIndex() << setw(30) << cities[idx].getName() << endl;
+        printDivider('=', 60);
     }
 
     void displayCities() {
-        cout << "\nCities" << endl;
+        printDivider('=', 60);
+        printTitle("CITIES LIST", '=', 60);
+        printDivider('-', 60);
+        
+        cout << setw(10) << "INDEX" << setw(30) << "CITY NAME" << endl;
+        printDivider('-', 60);
+        
         for (const auto& city : cities) {
-            cout << city.getIndex() << ": " << city.getName() << endl;
+            cout << setw(10) << city.getIndex() << setw(30) << city.getName() << endl;
         }
+        
+        printDivider('=', 60);
     }
 
     void displayRoads() {
         displayCities();
         
-        cout << "\nRoads Adjacency Matrix:" << endl;
+        printDivider('=', 60);
+        printTitle("ROADS ADJACENCY MATRIX", '=', 60);
+        printDivider('-', 60);
+        
+        // Display column headers (city indices)
+        cout << setw(6) << " ";
+        for (size_t j = 0; j < cities.size(); j++) {
+            cout << setw(4) << cities[j].getIndex();
+        }
+        cout << endl;
+        
+        printDivider('-', 60);
+        
+        // Display matrix with row headers
         for (size_t i = 0; i < cities.size(); i++) {
+            cout << setw(4) << cities[i].getIndex() << " |";
             for (size_t j = 0; j < cities.size(); j++) {
-                cout << roadsMatrix[i][j];
+                cout << setw(4) << roadsMatrix[i][j];
             }
             cout << endl;
         }
+        
+        printDivider('=', 60);
     }
 
     void displayAllData() {
         displayCities();
         
-        cout << "\nRoads Adjacency Matrix:" << endl;
+        // Display Roads Adjacency Matrix
+        printDivider('=', 60);
+        printTitle("ROADS ADJACENCY MATRIX", '=', 60);
+        printDivider('-', 60);
+        
+        // Display column headers (city indices)
+        cout << setw(6) << " ";
+        for (size_t j = 0; j < cities.size(); j++) {
+            cout << setw(4) << cities[j].getIndex();
+        }
+        cout << endl;
+        
+        printDivider('-', 60);
+        
+        // Display matrix with row headers
         for (size_t i = 0; i < cities.size(); i++) {
+            cout << setw(4) << cities[i].getIndex() << " |";
             for (size_t j = 0; j < cities.size(); j++) {
-                cout << roadsMatrix[i][j];
+                cout << setw(4) << roadsMatrix[i][j];
             }
             cout << endl;
         }
         
-        cout << "\nBudgets Adjacency Matrix:" << endl;
+        printDivider('=', 60);
+        
+        // Display Budgets Adjacency Matrix
+        printTitle("BUDGETS ADJACENCY MATRIX (Billion RWF)", '=', 60);
+        printDivider('-', 60);
+        
+        // Display column headers (city indices)
+        cout << setw(6) << " ";
+        for (size_t j = 0; j < cities.size(); j++) {
+            cout << setw(7) << cities[j].getIndex();
+        }
+        cout << endl;
+        
+        printDivider('-', 60);
+        
+        // Display matrix with row headers
         for (size_t i = 0; i < cities.size(); i++) {
+            cout << setw(4) << cities[i].getIndex() << " |";
             for (size_t j = 0; j < cities.size(); j++) {
-                cout << fixed << setprecision(1) << setw(5) << budgetMatrix[i][j] << " ";
+                cout << fixed << setprecision(1) << setw(7) << budgetMatrix[i][j];
             }
             cout << endl;
         }
+        
+        printDivider('=', 60);
     }
 
     void saveCitiesToFile() {
@@ -353,21 +430,43 @@ public:
     }
 };
 
+
+
 void displayMenu() {
-    cout << "\nMenu" << endl;
-    cout << "1. Add new city(ies)" << endl;
-    cout << "2. Add roads between cities" << endl;
-    cout << "3. Add the budget for roads" << endl;
-    cout << "4. Edit city" << endl;
-    cout << "5. Search for a city using its index" << endl;
-    cout << "6. Display cities" << endl;
-    cout << "7. Display roads" << endl;
-    cout << "8. Display recorded data on console" << endl;
-    cout << "9. Exit" << endl;
+    system("clear"); // Clear the console on Linux/macOS
+    
+    printDivider('=', 60);
+    printTitle("RWANDA INFRASTRUCTURE MANAGEMENT SYSTEM", '=', 60);
+    printDivider('=', 60);
+    
+    cout << "\n" << setw(25) << "MAIN MENU" << "\n" << endl;
+    printDivider('-', 60);
+    
+    cout << "  1. Add new city(ies)" << endl;
+    cout << "  2. Add roads between cities" << endl;
+    cout << "  3. Add the budget for roads" << endl;
+    cout << "  4. Edit city" << endl;
+    cout << "  5. Search for a city using its index" << endl;
+    cout << "  6. Display cities" << endl;
+    cout << "  7. Display roads" << endl;
+    cout << "  8. Display recorded data on console" << endl;
+    cout << "  9. Exit" << endl;
+    
+    printDivider('-', 60);
     cout << "Enter your choice: ";
 }
 
 int main() {
+    // Display welcome message
+    system("clear");
+    printDivider('*', 70);
+    printTitle("WELCOME TO RWANDA INFRASTRUCTURE MANAGEMENT SYSTEM", '*', 70);
+    printTitle("Ministry of Infrastructure", '-', 70);
+    printDivider('*', 70);
+    cout << "\nThis system helps manage cities, roads, and budgets for Rwanda's infrastructure." << endl;
+    cout << "Press Enter to continue..." << endl;
+    cin.get();
+    
     InfrastructureManagement infra;
     int choice;
     
@@ -389,6 +488,9 @@ int main() {
         
         switch (choice) {
             case 1: {
+                printDivider('=', 60);
+                printTitle("ADD NEW CITIES", '=', 60);
+                printDivider('-', 60);
                 int numCities;
                 cout << "Enter the number of cities to add: ";
                 
@@ -419,10 +521,15 @@ int main() {
                 
                 // Save data after adding cities
                 infra.saveAllData();
+                cout << "\nPress Enter to continue..." << endl;
+                cin.get();
                 break;
             }
             
             case 2: {
+                printDivider('=', 60);
+                printTitle("ADD ROADS BETWEEN CITIES", '=', 60);
+                printDivider('-', 60);
                 string city1, city2;
                 cout << "Enter the name of the first city: ";
                 getline(cin, city1);
@@ -442,10 +549,15 @@ int main() {
                 
                 // Save data after adding a road
                 infra.saveAllData();
+                cout << "\nPress Enter to continue..." << endl;
+                cin.get();
                 break;
             }
             
             case 3: {
+                printDivider('=', 60);
+                printTitle("ADD BUDGET FOR ROADS", '=', 60);
+                printDivider('-', 60);
                 string city1, city2;
                 double budget;
                 
@@ -485,10 +597,15 @@ int main() {
                 
                 // Save data after adding a budget
                 infra.saveAllData();
+                cout << "\nPress Enter to continue..." << endl;
+                cin.get();
                 break;
             }
             
             case 4: {
+                printDivider('=', 60);
+                printTitle("EDIT CITY", '=', 60);
+                printDivider('-', 60);
                 int index;
                 string newName;
                 
@@ -521,10 +638,15 @@ int main() {
                 
                 // Save data after editing a city
                 infra.saveAllData();
+                cout << "\nPress Enter to continue..." << endl;
+                cin.get();
                 break;
             }
             
             case 5: {
+                printDivider('=', 60);
+                printTitle("SEARCH FOR A CITY", '=', 60);
+                printDivider('-', 60);
                 int index;
                 
                 cout << "Enter the index of the city to search: ";
@@ -546,22 +668,42 @@ int main() {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
                 infra.searchCity(index);
+                cout << "\nPress Enter to continue..." << endl;
+                cin.get();
                 break;
             }
             
             case 6:
+                printDivider('=', 60);
+                printTitle("DISPLAY CITIES", '=', 60);
+                printDivider('-', 60);
                 infra.displayCities();
+                cout << "\nPress Enter to continue..." << endl;
+                cin.get();
                 break;
                 
             case 7:
+                printDivider('=', 60);
+                printTitle("DISPLAY ROADS", '=', 60);
+                printDivider('-', 60);
                 infra.displayRoads();
+                cout << "\nPress Enter to continue..." << endl;
+                cin.get();
                 break;
                 
             case 8:
+                printDivider('=', 60);
+                printTitle("DISPLAY ALL DATA", '=', 60);
+                printDivider('-', 60);
                 infra.displayAllData();
+                cout << "\nPress Enter to continue..." << endl;
+                cin.get();
                 break;
                 
             case 9:
+                printDivider('=', 60);
+                printTitle("EXITING PROGRAM", '=', 60);
+                printDivider('-', 60);
                 cout << "Exiting program. Goodbye!" << endl;
                 // Save all data before exiting
                 infra.saveAllData();
